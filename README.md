@@ -1,4 +1,4 @@
-```markdown
+
 # DrishtiSetu AI (दृष्टिसेतु)
 
 ### Explainable & Safety-Aware Retinal Diagnostic Copilot for Rural India
@@ -56,7 +56,6 @@ The platform operates across five modular pipelines:
 ├── o2_train_EyePACS.m              # ResNet-18 fast CPU balanced training pipeline
 └── README.md
 
-```
 
 ---
 
