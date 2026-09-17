@@ -1,147 +1,138 @@
-
 ```markdown
-# DristhiSetu: AI-Driven Retinal Triage & Explainable Diagnostics
+# DrishtiSetu AI (दृष्टिसेतु)
 
-**DristhiSetu** is an intelligent, MATLAB-based clinical triage and diagnostic decision-support system designed to detect Diabetic Retinopathy (DR) from fundus imagery. Built for point-of-care screening in resource-limited environments, it combines computer vision image quality assurance, deep learning grading (ResNet-18), explainable AI (Grad-CAM), and generative clinical report synthesis into an interactive web portal.
-
----
-
-## 🌟 Key Capabilities
-
-* **Automated Image Quality Assessment (QA):** Evaluates illumination, contrast, and focus metrics before downstream inference to reject poor fundus captures.
-* **Deep Learning DR Grading:** Multi-class classification of Diabetic Retinopathy stages (No DR, Mild, Moderate, Severe, Proliferative DR) powered by a fine-tuned ResNet-18 network.
-* **Explainable AI (XAI):** Integrated Grad-CAM heatmaps highlight microaneurysms, hemorrhages, and exudate clusters to offer interpretable rationales for clinicians.
-* **Agentic Medical Triage:** Bridges model inference with generative clinical assistance (`queryGeminiAgent.m`) to generate contextual clinical observations and triage recommendations.
-* **Automated Clinical Reporting:** Generates downloadable diagnostic PDF summaries detailing patient identifiers, classification metrics, and visual saliency maps.
-* **Cross-Platform PWA/Web Access:** Packaged via MATLAB Web App Compiler (`.ctf`) for deployment on local web servers or remote access via secure tunnels.
+### Explainable & Safety-Aware Retinal Diagnostic Copilot for Rural India
+**Smart India Hackathon 2026** | **Problem Statement ID:** SIH26038[cite: 4]  
+**Category:** Software | **Theme:** MedTech / HealthTech / BioTech[cite: 4]  
+**Team ID:** G91 | **Team Name:** DrishtiSetu[cite: 4]
 
 ---
 
-## 📂 Project Architecture
+## 📌 Overview
+
+**DrishtiSetu AI** is an edge-native, offline-tolerant retinal diagnostic screening copilot designed for Diabetic Retinopathy (DR) triage in resource-limited rural Primary Health Centres (PHCs)[cite: 4]. 
+
+Unlike academic "black-box" models that rely on high-bandwidth cloud APIs and high-end GPUs, DrishtiSetu couples a deep learning classifier with **deterministic clinical safety rules**, **Res-UNet biomarker segmentation**, and an **offline store-and-forward telemedicine cache**[cite: 4]. The system runs on standard non-GPU laptops in under 30 seconds per scan[cite: 4].
+
+---
+
+## 🚀 Key Features & Pipeline Architecture
+
+The platform operates across five modular pipelines:
+
+* **1. Deterministic Image Quality Assessment (IQA):** Evaluates focus sharpness (Laplacian variance $\ge 22.0$) and RMS contrast ($\ge 0.35$) on-device[cite: 4]. High-quality images pass untouched, borderline scans receive green-channel CLAHE, and poor exposures trigger immediate retake alerts to eliminate patient recall delays[cite: 4].
+* **2. Res-UNet Biomarker Segmentation:** A 4-level encoder-decoder network (~7.8M parameters) trained on benchmark datasets (IDRiD, DDR, Messidor-2)[cite: 4]. It segments 6 retinal structures: optic disc, fovea, blood vessels, microaneurysms, hard exudates, and hemorrhages[cite: 4].
+* **3. Severity Staging & Hybrid Safety Interlock:** Predicts ICDR Levels 0–4 via fine-tuned ResNet-18[cite: 4]. Hard-coded clinical rules override the neural network to force urgent or emergency specialist referrals whenever foveal threats ($\le 500\,\mu\text{m}$) or multi-quadrant hemorrhages are detected, guaranteeing $\ge 90\%$ sensitivity and $\ge 85\%$ specificity for referable DR (Level $\ge 2$)[cite: 4].
+* **4. Dual Explainability & Automated PDF Reporting:** Combines Layer-4 Grad-CAM saliency heatmaps with 4-color lesion segmentation masks and exports an audit-ready single-page A4 clinical diagnostic report (PDF) for rapid physician sign-off[cite: 4].
+* **5. Simulink Store-and-Forward Telemedicine:** A discrete-event network queue with a 256 MB local flash buffer guaranteeing zero data loss during rural WAN drops (10–1000 kbps), allowing 1 district specialist to oversee up to 150,000 annual screenings[cite: 4].
+
+---
+
+## 🛠️ Tech Stack
+
+* **Platform & Framework:** MATLAB R2026a, MATLAB App Designer[cite: 6]
+* **Computer Vision & Deep Learning:** Deep Learning Toolbox, Image Processing Toolbox, ResNet-18, Res-UNet[cite: 4, 6]
+* **Network & Systems Modeling:** Simulink (Monte Carlo Discrete-Event Telemedicine Buffer Simulation)[cite: 4]
+* **Frontend UI:** HTML5, CSS3, JavaScript integrated into MATLAB via `uihtml`
+* **Datasets Used:** EyePACS, IDRiD, Messidor-2, DDR[cite: 4, 5]
+
+---
+
+## 📁 Repository Structure
 
 ```text
-├── member1_2_pitch_innovation/   # Clinical workflow design & innovation pitch assets
-├── member3_cv_image_quality1/     # Fundus image preprocessing & quality validation pipelines
-├── member4_dl_explainability/     # DL model training, evaluation scripts & Grad-CAM routines
-├── member5_app_frontend/          # MATLAB App Designer UI source files & export utilities
-├── member6_simulink_systems/      # Hardware integration & edge streaming simulation models
-├── EyeTriage_Prototype.prj       # MATLAB Project configuration file
+├── manifests/                      # Dataset splitting manifests (Train/Val/Test)
+│   └── Model1/
+├── member2_pitch_innovation/       # SIH presentation slides and clinical documentation
+├── member3_cv_image_quality1/      # Deterministic IQA, green-channel CLAHE, and preprocessing
+├── member4_dl_explainability/      # ResNet-18 classifier, Grad-CAM routines, Res-UNet inference
+├── member5_app_frontend/           # MATLAB App Designer GUI (DristhiSetu.m) & CSS/JS UI assets
+│   ├── DristhiSetu.m
+│   └── generate_clinical_pdf.m
+├── member6_simulink_systems/       # Simulink store-and-forward WAN telemetry stress test
+│   ├── TelemedicineSync.slx
+│   └── simulate_telemedicine_program.m
+├── o1_prepare_Model1_data.m        # Multi-dataset ingestion and splitting script
+├── o2_train_EyePACS.m              # ResNet-18 fast CPU balanced training pipeline
 └── README.md
 
 ```
 
 ---
 
-## 🚀 Getting Started
+## 💻 Installation & Setup
 
 ### Prerequisites
 
-* **MATLAB** (R2024a or newer recommended)
-* **Toolboxes Required:**
+* MATLAB R2026a or later installed with:
+
+
 * Deep Learning Toolbox
 * Image Processing Toolbox
 * Computer Vision Toolbox
-* MATLAB Compiler & MATLAB Web App Server (for deployment)
+* Simulink
 
 
 
----
+### Clone the Repository
 
-### Setup & Local Execution
-
-1. **Clone the Repository:**
 ```bash
-git clone [https://github.com/om-pakhale/DristhiSetu.git](https://github.com/om-pakhale/DristhiSetu.git)
+git clone [https://github.com/om-pakhale/DristhiSetu.git](https://github.com/om-pakhale/DristhiSetu.git)[cite: 4]
 cd DristhiSetu
 
 ```
 
+### Launch the Application
 
-2. **Open the Project in MATLAB:**
-* Double-click `EyeTriage_Prototype.prj` or run in the MATLAB Command Window:
+1. Open MATLAB and navigate to the project directory.
+2. In the MATLAB Command Window, run:
 ```matlab
-openProject('EyeTriage_Prototype.prj');
-
-```
-
-
-
-
-3. **Obtain Model Checkpoints:**
-* Download the pre-trained weights (`ResNet18_EyePACS.mat`) and place them in:
-```text
-DR_Project/models/Model1_ResNet18/
-
-```
-
-
-*(Refer to the repository releases or drive link for shared weights)*.
-
-
-4. **Launch the Application:**
-* Run the main App Designer file:
-```matlab
+addpath(genpath(pwd));
 DristhiSetu
 
 ```
 
 
-
-
-
----
-
-## 🏋️ Model Training
-
-To retrain or fine-tune the classification backbone:
-
-1. Navigate to the deep learning module:
-```matlab
-cd member4_dl_explainability
-
-```
-
-
-2. Configure your dataset path inside your training script (`train_model.m`).
-3. Execute the script to train the network and save evaluation confusion matrices.
+3. The dark-themed copilot dashboard will launch. You can attach a retinal fundus scan (`.jpg`, `.png`), enter patient details, review extracted biomarker overlays, and export the A4 clinical diagnostic report.
 
 ---
 
-## 🌐 Web & Mobile Deployment
+## 📊 Clinical ICDR Staging Reference
 
-To deploy the standalone web interface:
+| Level | Severity Stage | Clinical Biomarkers Identified | Referral Action |
+| --- | --- | --- | --- |
+| **Level 0** | Normal | Uniform background, zero high-frequency lesions
 
-1. Compile the application into a Web App Archive (`.ctf`) using the MATLAB Web App Compiler.
-2. Deploy the generated `.ctf` file to the MATLAB Web App Server directory:
-```text
-C:\ProgramData\MathWorks\webapps\<MATLAB_VERSION>\apps\
+ | Routine Annual Screening |
+| **Level 1** | Mild NPDR | Isolated microaneurysms only
 
-```
+ | 12-Month Monitoring |
+| **Level 2** | Moderate NPDR | Multiple microaneurysms, hard exudates, minor hemorrhages
 
+ | Referable DR (Specialist Review)
 
-3. Expose port `9988` securely to mobile devices using Cloudflare Tunnel:
-```cmd
-cloudflared tunnel --url http://localhost:9988
+ |
+| **Level 3** | Severe NPDR | Blot hemorrhages in all 4 quadrants, significant exudate rings
 
-```
+ | Urgent Referral (Within 1 Week)
 
+ |
+| **Level 4** | Proliferative DR | Neovascularization, vitreous hemorrhage, foveal encroachment ($\le 500\,\mu\text{m}$)
 
-4. Access `https://<your-subdomain>.trycloudflare.com/webapps/home/index.html` in a mobile browser and tap **"Add to Home screen"** to run as a Progressive Web App (PWA).
+ | Emergency Referral (Immediate)
+
+ |
 
 ---
 
-## 🛡️ Clinical Disclaimer
+## 👥 Team DrishtiSetu (Team ID: G91)
 
-*DristhiSetu is an academic research prototype engineered for clinical decision support and triage assistance. It is not an FDA/CE-certified diagnostic device and should not replace formal ophthalmological evaluation by a licensed medical practitioner.*
+* **Om Narendra Pakhale** – System Architecture, ML Pipeline & MATLAB App Designer Frontend.
+* **Ahmad Momin** - System Architecture , Agentic Ai.
+* **Gous bharuphi** - Deep Learning Model , ReUNt 18 .
+* Built for **Smart India Hackathon 2026**
 
----
-
-## 👥 Contributors
-
-* Developed as part of the **EyeTriage Prototype** initiative.
 
 ```
-
-Save this as `README.md` in the root of your project directory, commit it, and run `git push origin main` to update your repository landing page.
 
 ```
